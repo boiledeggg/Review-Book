@@ -27,13 +27,14 @@ claude-nextjs-starters/
 ```
 src/app/
 ├── layout.tsx           # 🎨 루트 레이아웃 (전역 설정)
-├── page.tsx            # 🏠 홈페이지 (/)
+├── page.tsx            # 🏠 홈페이지 (/) - 책 리뷰 목록, 검색/필터/정렬
 ├── globals.css         # 🎨 전역 CSS 스타일
 ├── favicon.ico         # 🔖 파비콘
-├── login/              # 🔐 로그인 페이지
+├── [id]/               # 📖 책 리뷰 상세 페이지 (동적 라우트)
 │   └── page.tsx
-└── signup/             # ✍️ 회원가입 페이지
-    └── page.tsx
+├── loading.tsx         # ⏳ 로딩 UI (필요시)
+├── error.tsx           # ❌ 에러 UI (필요시)
+└── not-found.tsx       # 🔍 404 페이지 (필요시)
 ```
 
 **🚀 App Router 규칙:**
@@ -47,28 +48,23 @@ src/app/
 
 ```
 src/components/
-├── ui/                 # 🎛️ 기본 UI 컴포넌트 (shadcn/ui)
-│   ├── button.tsx     # 버튼
-│   ├── card.tsx       # 카드
-│   ├── form.tsx       # 폼 관련
-│   ├── input.tsx      # 입력 필드
-│   └── ...           # 기타 UI 컴포넌트
-├── layout/            # 🏗️ 레이아웃 컴포넌트
-│   ├── container.tsx  # 컨테이너 래퍼
-│   ├── header.tsx     # 헤더
-│   └── footer.tsx     # 푸터
-├── navigation/        # 🧭 네비게이션 컴포넌트
-│   ├── main-nav.tsx   # 메인 네비게이션
-│   └── mobile-nav.tsx # 모바일 네비게이션
-├── sections/          # 📄 페이지 섹션 컴포넌트
-│   ├── hero.tsx       # 히어로 섹션
-│   ├── features.tsx   # 기능 소개
-│   └── cta.tsx        # Call-to-Action
-├── providers/         # 🔧 Context 프로바이더
+├── ui/                    # 🎛️ 기본 UI 컴포넌트 (shadcn/ui)
+│   ├── button.tsx
+│   ├── card.tsx
+│   ├── input.tsx
+│   ├── select.tsx
+│   └── ...               # 기타 shadcn/ui 컴포넌트
+├── layout/                # 🏗️ 레이아웃 컴포넌트
+│   ├── header.tsx         # 헤더 (로고 + 검색창)
+│   └── footer.tsx         # 푸터
+├── providers/             # 🔧 Context 프로바이더
 │   └── theme-provider.tsx
-├── login-form.tsx     # 🔐 로그인 폼
-├── signup-form.tsx    # ✍️ 회원가입 폼
-└── theme-toggle.tsx   # 🌓 테마 토글
+├── BookCard.tsx           # 📚 책 카드 (제목/저자/장르/평점/읽은 날짜)
+├── StarRating.tsx         # ⭐ 별점 표시 컴포넌트
+├── SearchBar.tsx          # 🔍 키워드 검색 입력 (React Hook Form)
+├── GenreFilter.tsx        # 🏷️ 장르 필터 탭 (전체 + 동적 장르 목록)
+├── SortSelect.tsx         # 📊 정렬 셀렉트박스
+└── NotionRenderer.tsx     # 📝 Notion 블록 HTML 렌더링
 ```
 
 **🧩 컴포넌트 분류 규칙:**
@@ -81,29 +77,22 @@ src/components/
 2. **layout/**: 페이지 구조를 담당하는 레이아웃 컴포넌트
    - 전체 페이지 구조
    - 공통 헤더/푸터
-   - 컨테이너 래퍼
 
-3. **navigation/**: 네비게이션 관련 컴포넌트
-   - 메뉴, 브레드크럼
-   - 페이지네이션
-   - 사이드바
-
-4. **sections/**: 특정 페이지 섹션을 위한 컴포넌트
-   - 홈페이지 섹션들
-   - 랜딩 페이지 블록
-   - 마케팅 컴포넌트
-
-5. **providers/**: React Context 프로바이더
+3. **providers/**: React Context 프로바이더
    - 전역 상태 관리
    - 테마 관리
-   - 인증 상태
 
 ### src/lib/ - 유틸리티 및 설정
 
 ```
 src/lib/
-├── utils.ts           # 🛠️ 공통 유틸리티 함수
-└── env.ts             # 🔧 환경변수 검증
+├── utils.ts           # 🛠️ 공통 유틸리티 함수 (cn 등)
+├── env.ts             # 🔧 환경변수 검증 (Zod 스키마)
+├── notion.ts          # 📡 Notion 클라이언트 + API 함수
+│                      #   - getBookReviews() 전체 목록
+│                      #   - getBookReview(id) 단일 페이지
+│                      #   - getBookReviewBlocks(id) 본문 블록
+└── dummy-data.ts      # 🧪 개발용 더미 데이터 (Phase 2까지 사용)
 ```
 
 **📚 lib/ 폴더 확장 가이드:**
@@ -111,19 +100,11 @@ src/lib/
 src/lib/
 ├── utils.ts           # 공통 유틸리티
 ├── env.ts             # 환경변수 검증
-├── constants.ts       # 상수 정의
-├── types/             # TypeScript 타입 정의
-│   ├── auth.ts
-│   └── api.ts
-├── hooks/             # 커스텀 훅
-│   ├── use-local-storage.ts
-│   └── use-api.ts
-├── schemas/           # Zod 스키마
-│   ├── auth.ts
-│   └── user.ts
-└── api/               # API 관련 유틸리티
-    ├── client.ts
-    └── endpoints.ts
+├── notion.ts          # Notion API 클라이언트
+├── dummy-data.ts      # 개발용 더미 데이터
+└── types/             # TypeScript 타입 정의
+    ├── book.ts        # BookReview 인터페이스
+    └── notion.ts      # NotionBlock 인터페이스
 ```
 
 ## 🏷️ 파일 네이밍 컨벤션
@@ -207,11 +188,8 @@ src/components/ui/custom-component.tsx
 # 정적 페이지
 src/app/about/page.tsx
 
-# 동적 페이지
-src/app/users/[id]/page.tsx
-
-# 그룹 라우트
-src/app/(auth)/login/page.tsx
+# 동적 페이지 (책 리뷰 상세)
+src/app/[id]/page.tsx
 ```
 
 ### 3. 새 비즈니스 컴포넌트 추가
@@ -219,9 +197,8 @@ src/app/(auth)/login/page.tsx
 ```bash
 # 위치 결정 기준:
 1. 특정 페이지에서만 사용 → 해당 페이지 폴더 내
-2. 여러 페이지에서 사용 → components/ 적절한 카테고리
+2. 여러 페이지에서 사용 → components/ 루트
 3. 레이아웃 관련 → components/layout/
-4. 네비게이션 관련 → components/navigation/
 ```
 
 ### 4. 새 유틸리티 추가

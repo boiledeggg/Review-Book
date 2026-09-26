@@ -1,15 +1,31 @@
 # 🤖 Claude Code 개발 지침
 
-**claude-nextjs-starters**는 Next.js 15.5.3 + React 19 기반 모던 웹 애플리케이션 스타터 템플릿입니다.
+**review-book**은 Notion을 CMS로 활용하는 개인 책 리뷰 블로그입니다. Notion에서 글을 작성하면 별도 배포 없이 블로그에 자동 반영됩니다.
 
 ## 🛠️ 핵심 기술 스택
 
 - **Framework**: Next.js 15.5.3 (App Router + Turbopack)
 - **Runtime**: React 19.1.0 + TypeScript 5
 - **Styling**: TailwindCSS v4 + shadcn/ui (new-york style)
-- **Forms**: React Hook Form + Zod + Server Actions
+- **CMS**: @notionhq/client (Notion API) + ISR 캐싱 (revalidate=3600)
+- **Forms**: React Hook Form + Zod
 - **UI Components**: Radix UI + Lucide Icons
 - **Development**: ESLint + Prettier + Husky + lint-staged
+
+## 🔑 환경 변수 (.env.local)
+
+```
+NOTION_TOKEN=secret_xxxx          # Notion Integration 토큰
+NOTION_DATABASE_ID=xxxx           # 책 리뷰 데이터베이스 ID
+```
+
+## 🏗️ 아키텍처 개요
+
+- **라우트**: `/` (홈 - 목록/검색/필터), `/[id]` (상세 - 책 리뷰 본문)
+- **데이터 흐름**: Notion DB → `src/lib/notion.ts` → Server Component → Client Component (필터/검색은 클라이언트 사이드 `useState + useMemo`)
+- **Notion 데이터 모델**: `BookReview` (id, title, genre, author, published, star, readDate, review) / `NotionBlock` (상세 페이지 본문)
+- **캐싱**: ISR `revalidate=3600` (홈/상세 모두)
+- **인증 없음**: 인증이 필요하지 않은 공개 블로그
 
 ## 📚 개발 가이드
 
